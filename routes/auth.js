@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+
+// Importing individual controller functions from their respective files
 const { sendOtp } = require('../controllers/authController/sendOtp');
 const { verifyOtp } = require('../controllers/authController/verifyOtp');
 const { createProfile } = require('../controllers/authController/createProfile');

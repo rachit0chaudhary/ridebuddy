@@ -1,3 +1,4 @@
+require('dotenv').config();
 const axios = require('axios');
 const bcrypt = require('bcrypt');
 const User = require('../../models/User');
@@ -56,7 +57,7 @@ exports.sendOtp = async (req, res) => {
     const templateId = '1707170806586426117';
     const message = `Your One Time Password (OTP) for your RideBuddy account is ${otp} . Please validate it on authentication page and do not share it with anyone. Regards Team AP Mobility India Private Limited`;
 
-    const url = `https://sms.textifydigitals.com/vb/apikey.php?apikey=${apiKey}&senderid=${senderId}&templateid${templateId}=&number=${mobile}&message= ${message}`;
+    const url = `https://sms.textifydigitals.com/vb/apikey.php?apikey=${apiKey}&senderid=${senderId}&templateid${templateId}=&number=${mobile}&message=${message}`;
 
     try {
         const response = await axios.get(url);

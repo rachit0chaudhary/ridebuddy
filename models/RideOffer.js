@@ -1,21 +1,31 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
-const RideSchemma = new mongoose.Schemma({
+const RideSchema = new mongoose.Schema({
     source: {
         type: String,
-        ref: 'User',
         required: true
+    },
+    addStop: {
+        type: String
     },
     destination: {
         type: String,
-        ref: 'User',
         required: true
     },
-    startLocation: {
+    vehical: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Profile',
+        required: true
+    },
+    routes: {
         type: String,
         required: true
     },
-    endLocation: {
+    tripDistance: {
+        type: String,
+        required: true
+    },
+    tripDuration: {
         type: String,
         required: true
     },
@@ -23,12 +33,16 @@ const RideSchemma = new mongoose.Schemma({
         type: Date,
         required: true
     },
-    distance: {
-        type: Number,
+    pickupDate: {
+        type: Date,
         required: true
     },
-    fare: {
-        type: Number,
+    noOfSeat: {
+        type: String,
+        required: true
+    },
+    pricePerSeat: {
+        type: String,
         required: true
     },
     status: {
@@ -36,7 +50,8 @@ const RideSchemma = new mongoose.Schemma({
         enum: ['pending', 'accepted', 'started', 'arrived', 'cancelled', 'completed'],
         default: 'pending'
     }
-})
+});
 
-Ride = mongoose.model('Ride', RideSchemma);
+const Ride = mongoose.model('Ride', RideSchema);
+
 module.exports = Ride;
