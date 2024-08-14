@@ -1,13 +1,12 @@
 require('dotenv').config();
-const axios = require('axios');
 const bcrypt = require('bcrypt');
 const User = require('../../models/User');
 const generateOTP = require('../../utils/generateOTP');
+const sendOtp = require('../../utils/sendOtp');
 const sendEmail = require('../../config/nodemailer');
 
-const OTP_HASH_SALT_ROUNDS = 10; // Salt rounds for bcrypt
+const OTP_HASH_SALT_ROUNDS = 10;
 
-// Send OTP to mobile and email
 exports.sendOtp = async (req, res) => {
     const { mobile, email } = req.body;
 
@@ -16,8 +15,7 @@ exports.sendOtp = async (req, res) => {
     }
 
     const otp = generateOTP();
-    const otpExpiry = Date.now() + 5 * 60 * 1000; // OTP valid for 5 minutes
-
+    const otpExpiry = Date.now() + 5 * 60 * 1000;
     const hashedOtp = await bcrypt.hash(otp, OTP_HASH_SALT_ROUNDS);
 
     let user = await User.findOne({ mobile });
@@ -31,15 +29,13 @@ exports.sendOtp = async (req, res) => {
 
     if (email) {
         const emailOtp = generateOTP();
-        const emailOtpExpiry = Date.now() + 5 * 60 * 1000; // OTP valid for 5 minutes
-
+        const emailOtpExpiry = Date.now() + 5 * 60 * 1000;
         const hashedEmailOtp = await bcrypt.hash(emailOtp, OTP_HASH_SALT_ROUNDS);
 
         user.email = email;
         user.emailOtp = hashedEmailOtp;
         user.emailOtpExpiry = emailOtpExpiry;
 
-        // Send OTP to email
         try {
             await sendEmail(email, 'Your RideBuddy OTP', `Your OTP for RideBuddy is ${emailOtp}. Please do not share it with anyone.`);
             console.log(`OTP sent to email ${email}`);
@@ -51,26 +47,11 @@ exports.sendOtp = async (req, res) => {
 
     await user.save();
 
-    // Send OTP via Textify Digitals API
-    const apiKey = process.env.API_KEY;
-    const senderId = 'APMOBL';
-    const templateId = '1707170806586426117';
-    const message = `Your One Time Password (OTP) for your RideBuddy account is ${otp} . Please validate it on authentication page and do not share it with anyone. Regards Team AP Mobility India Private Limited`;
-
-    const url = `https://sms.textifydigitals.com/vb/apikey.php?apikey=${apiKey}&senderid=${senderId}&templateid${templateId}=&number=${mobile}&message=${message}`;
-
     try {
-        const response = await axios.get(url);
-        console.log('API Response:', response.data);
-        if (response.data.status === 'Success') {
-            console.log(`OTP ${otp} sent to mobile number ${mobile}`);
-            res.status(200).json({ message: 'OTP sent to mobile number and email (if provided)' });
-        } else {
-            console.error('Failed to send OTP to mobile:', response.data);
-            res.status(500).json({ message: 'Failed to send OTP to mobile number' });
-        }
+        await sendOtp({ mobile, otp });
+        res.status(200).json({ message: 'OTP sent to mobile number and email (if provided)' });
     } catch (error) {
-        console.error('Error sending OTP to mobile:', error.message || error);
-        res.status(500).json({ message: 'Failed to send OTP to mobile number' });
+        console.error('Error during OTP sending:', error);
+        res.status(500).json({ message: 'Error sending OTP via SMS', error: error.message || error });
     }
 };
