@@ -1,16 +1,20 @@
 const Vehicle = require('../../models/Vehical');
 
 const addVehicle = async (req, res) => {
-    const { ownerId, type, vehicleNumber, rcBookDetails, dlDetails } = req.body;
+    const { ownerId, vehicleName, type, vehicleNumber, vehicleColor, rcBookDetails, dlDetails, rcResponses, dlResponses } = req.body;
     const vehiclePicture = req.file ? req.file.path : null;
 
     try {
         const newVehicle = new Vehicle({
             ownerId,
+            vehicleName,
             type,
             vehicleNumber,
+            vehicleColor,
             rcBookDetails,
+            rcResponses: JSON.parse(rcResponses),
             dlDetails,
+            dlResponses: JSON.parse(dlResponses),
             vehiclePicture
         });
 

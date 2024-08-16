@@ -9,6 +9,7 @@ const { getRideById } = require('../controllers/offerRide/getRideById');
 const { updateRide } = require('../controllers/offerRide/updateRide');
 const { deleteRide } = require('../controllers/offerRide/deleteRide');
 
+// Define routes for Offer Ride functionality
 router.post('/rides', authenticateToken, createRide);  // Route to create a new ride offer
 router.get('/rides', authenticateToken, getRides);  // Route to get all ride offers
 router.get('/rides/:id', authenticateToken, getRideById);  // Route to get a specific ride offer by ID

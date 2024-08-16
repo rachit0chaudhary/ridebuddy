@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 function wordLimit(val) {
-    return val.split(' ').filter(word => word.length > 0).length <= 300;
+    return val.split(' ').filter(word => word.length > 0).length <= 120;
 }
 
 function arrayLimit(val) {
@@ -31,19 +31,17 @@ const ProfileSchema = new mongoose.Schema({
     },
     bio: {
         type: String,
-        validate: [wordLimit, '{PATH} exceeds the 300-word limit']
+        validate: [wordLimit, '{PATH} exceeds the 120-word limit']
     },
-    interests: [String],
-    faceID: {
-        type: String,
+    interests: {
+        type: [String]
     },
     images: {
         type: [String],
         validate: [arrayLimit, '{PATH} exceeds the limit of 5']
     },
-    wallet: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Wallet'
+    prompts: {
+        type: [String]
     },
 });
 

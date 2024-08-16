@@ -9,6 +9,7 @@ const { getBookingById } = require('../controllers/bookRide/getBookingById');
 const { updateBooking } = require('../controllers/bookRide/updateBooking');
 const { cancelBooking } = require('../controllers/bookRide/cancleBooking');
 
+// Define routes for Book Ride functionality
 router.post('/book-ride', authenticateToken, createBooking); // Create a new ride booking
 router.get('/bookings', authenticateToken, getAllBookings);  // Get all ride bookings
 router.get('/booking/:id', authenticateToken, getBookingById);  // Specific ride booking by ID

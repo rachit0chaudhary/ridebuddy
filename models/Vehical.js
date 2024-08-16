@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Create Vehicle Schema
 const VehicleSchema = new Schema({
     ownerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true
+    },
+    vehicleName: {
+        type: String,
         required: true
     },
     type: {
@@ -18,12 +21,24 @@ const VehicleSchema = new Schema({
         required: true,
         unique: true
     },
+    vehicleColor: {
+        type: String,
+        required: true
+    },
     rcBookDetails: {
         type: String,
         required: true
     },
+    rcResponses: {
+        type: Object,
+        required: true
+    },
     dlDetails: {
         type: String,
+        required: true
+    },
+    dlResponses: {
+        type: Object,
         required: true
     },
     vehiclePicture: {
