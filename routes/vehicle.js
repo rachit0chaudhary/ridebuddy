@@ -4,10 +4,10 @@ const authenticateToken = require('../middleware/authenticateToken');
 const upload = require('../config/multerConfig'); // Import the multer configuration
 
 // Import controllers from separate files
-const addVehicle = require('../controllers/addVehical/addVehicle');
-const getAllVehicles = require('../controllers/addVehical/getAllVehicales');
-const getVehicleById = require('../controllers/addVehical/getVeicleById');
-const deleteVehicle = require('../controllers/addVehical/deleteVehical');
+const addVehicle = require('../controllers/addVehicle/addVehicle');
+const getAllVehicles = require('../controllers/addVehicle/getAllVehicles');
+const getVehicleById = require('../controllers/addVehicle/getVehicleById');
+const deleteVehicle = require('../controllers/addVehicle/deleteVehicle');
 
 // Define routes for vehicle management
 router.post('/add', authenticateToken, upload.single('vehiclePicture'), addVehicle); // Route to add a new vehicle

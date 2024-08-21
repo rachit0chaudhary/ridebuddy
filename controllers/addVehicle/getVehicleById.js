@@ -1,4 +1,4 @@
-const Vehicle = require('../../models/Vehical');
+const Vehicle = require('../../models/Vehicle');
 
 const getVehicleById = async (req, res) => {
     const { id } = req.params;

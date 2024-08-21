@@ -1,4 +1,4 @@
-const Vehicle = require('../../models/Vehical');
+const Vehicle = require('../../models/Vehicle');
 
 const addVehicle = async (req, res) => {
     const { ownerId, vehicleName, type, vehicleNumber, vehicleColor, rcBookDetails, dlDetails, rcResponses, dlResponses } = req.body;

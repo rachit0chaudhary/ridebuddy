@@ -7,9 +7,10 @@ const Login = require('./routes/login');
 const OfferRide = require('./routes/offerRide');
 const BookRide = require('./routes/bookRide');
 const Wallet = require('./routes/wallet');
-const Vehical = require('./routes/vehical');
-const Emergency = require('./routes/vehical');
+const Vehical = require('./routes/vehicle');
+const Emergency = require('./routes/emergencyContacts');
 const Verification = require('./routes/verification');
+const Message = require('./routes/message');
 
 const app = express();
 app.use(express.json());
@@ -26,6 +27,7 @@ app.use('/api', Wallet);
 app.use('/api', Vehical);
 app.use('/api', Emergency);
 app.use('/api', Verification);
+app.use('/api', Message);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
