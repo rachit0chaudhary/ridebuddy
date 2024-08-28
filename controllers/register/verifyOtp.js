@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt');
 const User = require('../../models/User');
 const sendEmail = require('../../config/nodemailer');
+const jwt = require('jsonwebtoken');
 
 // Verify OTP
 exports.verifyOtp = async (req, res) => {
@@ -18,6 +19,7 @@ exports.verifyOtp = async (req, res) => {
     }
 
     // Verify the OTP
+    console.log(otp, user.otp)
     const otpMatch = await bcrypt.compare(otp, user.otp);
 
     if (!otpMatch) {
@@ -55,9 +57,16 @@ exports.verifyOtp = async (req, res) => {
 
     await user.save();
 
+    const token = jwt.sign({ mobile: user.mobile, email: user.email, id: user._id }, process.env.JWT_SECRET, { expiresIn: '3h' });
+    // res.cookie("token", token, options).status(200).json({
+    //     message: 'OTP verified successfully. You can now create your profile.',
+    //     isMobileVerified: user.isMobileVerified,
+    //     isEmailVerified: user.isEmailVerified
+    // })
     res.status(200).json({
         message: 'OTP verified successfully. You can now create your profile.',
         isMobileVerified: user.isMobileVerified,
-        isEmailVerified: user.isEmailVerified
+        isEmailVerified: user.isEmailVerified,
+        token
     });
 };

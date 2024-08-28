@@ -2,6 +2,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
 const Profile = require('../../models/Profile');
+const Wallet = require("../../models/Wallet")
 
 // Create Profile
 exports.createProfile = async (req, res) => {
@@ -29,6 +30,7 @@ exports.createProfile = async (req, res) => {
         gender,
         interests
     });
+    
 
     await profile.save();
 

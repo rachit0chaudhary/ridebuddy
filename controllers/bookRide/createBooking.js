@@ -2,7 +2,7 @@ const BookRide = require('../../models/BookRide');
 
 exports.createBooking = async (req, res) => {
     try {
-        const { ride, user, seatsBooked, totalAmount, travelDate, pickupTime, pickupLocation, dropoffLocation } = req.body;
+        const { ride, user, seatsBooked, totalAmount, travelDate, pickupTime, pickupName, pickupPoint, dropoffName, dropoffPoint } = req.body;
 
         const newBooking = new BookRide({
             ride,
@@ -11,8 +11,10 @@ exports.createBooking = async (req, res) => {
             totalAmount,
             travelDate,
             pickupTime,
-            pickupLocation,
-            dropoffLocation
+            pickupName,
+            pickupPoint,
+            dropoffName,
+            dropoffPoint,
         });
 
         await newBooking.save();

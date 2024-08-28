@@ -2,12 +2,15 @@ const Ride = require('../../models/RideOffer');
 
 exports.updateRide = async (req, res) => {
     try {
-        const { source, addStop, destination, vehical, routes, tripDistance, tripDuration, pickupTime, pickupDate, noOfSeat, pricePerSeat, status } = req.body;
+        const { sourceName, sourcePoint, addStopName, addStopPoints, destinationName, destinationPoint, vehical, routes, tripDistance, tripDuration, pickupTime, pickupDate, noOfSeat, pricePerSeat, status } = req.body;
 
         const updatedRide = await Ride.findByIdAndUpdate(req.params.id, {
-            source,
-            addStop,
-            destination,
+            sourceName,
+            sourcePoint,
+            addStopName,
+            addStopPoints,
+            destinationName,
+            destinationPoint,
             vehical,
             routes,
             tripDistance,

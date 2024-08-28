@@ -2,7 +2,7 @@ const BookRide = require('../../models/BookRide');
 
 exports.updateBooking = async (req, res) => {
     try {
-        const { seatsBooked, totalAmount, travelDate, pickupTime, pickupLocation, dropoffLocation, bookingStatus, paymentStatus } = req.body;
+        const { seatsBooked, totalAmount, travelDate, pickupTime, pickupName, pickupPoint, dropoffName, dropoffPoint, bookingStatus, paymentStatus } = req.body;
 
         const updatedBooking = await BookRide.findByIdAndUpdate(
             req.params.id,
@@ -11,8 +11,10 @@ exports.updateBooking = async (req, res) => {
                 totalAmount,
                 travelDate,
                 pickupTime,
-                pickupLocation,
-                dropoffLocation,
+                pickupName,
+                pickupPoint,
+                dropoffName,
+                dropoffPoint,
                 bookingStatus,
                 paymentStatus,
                 rideUpdateDate: Date.now() // Update the rideUpdateDate to the current date and time

@@ -49,13 +49,33 @@ const bookRideSchema = new mongoose.Schema({
         type: Date,
         required: true
     },
-    pickupLocation: {
+    pickupName: {
         type: String,
         required: true
     },
-    dropoffLocation: {
+    pickupPoint: {
+        latitude: {
+            type: String,
+            required: true,
+        },
+        longitude: {
+            type: String,
+            required: true
+        }
+    },
+    dropoffName: {
         type: String,
         required: true
+    },
+    dropoffPoint: {
+        latitude: {
+            type: String,
+            required: true,
+        },
+        longitude: {
+            type: String,
+            required: true
+        }
     }
 });
 

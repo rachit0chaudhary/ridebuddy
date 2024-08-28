@@ -43,6 +43,10 @@ const ProfileSchema = new mongoose.Schema({
     prompts: {
         type: [String]
     },
+    wallet: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Wallet"
+    }
 });
 
 module.exports = mongoose.model('Profile', ProfileSchema);
