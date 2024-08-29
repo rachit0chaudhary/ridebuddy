@@ -40,7 +40,7 @@ app.use('/api', Emergency);
 app.use('/api', Verification);
 app.use('/api', Message);
 app.use('/api', Community);
-app.use('/api', Coupon);
+// app.use('/api', Coupon);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
