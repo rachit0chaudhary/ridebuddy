@@ -1,4 +1,6 @@
+// Load environment variables from .env file
 require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -8,7 +10,7 @@ const Login = require('./routes/login');
 const OfferRide = require('./routes/offerRide');
 const BookRide = require('./routes/bookRide');
 const Wallet = require('./routes/wallet');
-const Vehical = require('./routes/vehicle');
+const Vehicle = require('./routes/vehicle'); // Fixed spelling from "Vehical" to "Vehicle"
 const Emergency = require('./routes/emergencyContacts');
 const Verification = require('./routes/verification');
 const Message = require('./routes/message');
@@ -21,9 +23,9 @@ const app = express();
 const corsOptions = {
     origin: '*', // Adjust this to match your frontend's origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-   // Allow cookies to be sent
+    credentials: true, // Allow cookies to be sent
 };
-app.use(cors(corsOptions));// Enable CORS
+app.use(cors(corsOptions)); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
 
 // Connect to MongoDB
@@ -35,12 +37,12 @@ app.use('/api', Login);
 app.use('/api', OfferRide);
 app.use('/api', BookRide);
 app.use('/api', Wallet);
-app.use('/api', Vehical);
+app.use('/api', Vehicle);
 app.use('/api', Emergency);
 app.use('/api', Verification);
 app.use('/api', Message);
 app.use('/api', Community);
-// app.use('/api', Coupon);
+app.use('/api', Coupon); // Uncommented to include the Coupon route
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -49,7 +51,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the Server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000; // Changed default port to 10000 to match your setup
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
