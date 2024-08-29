@@ -6,9 +6,11 @@ const getAllRides = async (req, res) => {
   try {
     const { pickupDate, sourcePoint, destinationPoint } = req.body;
 
-    // Fetch all rides from the database
-    let rides = await Ride.find({});
-    console.log('All rides from DB:', rides);
+    // Fetch all rides from the database and populate all driver details
+    let rides = await Ride.find({})
+      .populate('driver'); // This will populate all fields from the Profile schema
+
+    console.log('All rides with populated driver details:', rides);
 
     // Filter by pickup date
     if (pickupDate) {

@@ -2,9 +2,10 @@ const Ride = require('../../models/RideOffer'); // Import the Ride model
 
 exports.getRideOfferById = async (req, res) => {
     try {
-        // Find the ride offer by ID
+        // Find the ride offer by ID and populate driver and vehical details
         const rideOffer = await Ride.findById(req.params.id)
-            .populate('driver vehical'); // Populate references to Profile and Vehicle models
+            .populate('driver')
+            .populate('vehical'); // Populate references to Profile and Vehicle models
 
         if (!rideOffer) {
             return res.status(404).json({ success: false, message: 'Ride offer not found' });
