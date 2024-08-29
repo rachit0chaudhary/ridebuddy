@@ -22,7 +22,7 @@ const app = express();
 // Middleware
 const corsOptions = {
     origin: '*', // Adjust this to match your frontend's origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE' ,"PATCH"],
     credentials: true, // Allow cookies to be sent
 };
 app.use(cors(corsOptions)); // Enable CORS
