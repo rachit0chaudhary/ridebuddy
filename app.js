@@ -51,7 +51,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the Server
-const PORT = process.env.PORT || 10000; // Changed default port to 10000 to match your setup
+const PORT = process.env.PORT || 5000; // Changed default port to 10000 to match your setup
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
