@@ -42,7 +42,7 @@ app.use('/api', Emergency);
 app.use('/api', Verification);
 app.use('/api', Message);
 app.use('/api', Community);
-app.use('/api', Coupon); // Uncommented to include the Coupon route
+// app.use('/api', Coupon); // Uncommented to include the Coupon route
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
