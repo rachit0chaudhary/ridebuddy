@@ -13,18 +13,12 @@ exports.getRideOfferById = async (req, res) => {
         }
 
         // Find the wallet details for the driver
-        const wallet = await Wallet.findOne({ userId: rideOffer.driver._id });
-
-        // If wallet not found, return a response with a message
-        if (!wallet) {
-            return res.status(404).json({ success: false, message: 'Wallet not found for the driver' });
-        }
+        
 
         // Send the ride offer details and wallet details in the response
         res.status(200).json({
             success: true,
-            rideOffer,
-            wallet
+            rideOffer
         });
     } catch (error) {
         // Handle errors and send an appropriate response
