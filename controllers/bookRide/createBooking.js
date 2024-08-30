@@ -1,25 +1,41 @@
-const BookRide = require('../../models/BookRide');
+const RequestBooking = require('../../models/RequestBooking');
 
-exports.createBooking = async (req, res) => {
+// Controller function to handle the creation of a booking request
+const createBookingRequest = async (req, res) => {
     try {
-        const { ride, user, seatsBooked, totalAmount, travelDate, pickupTime, pickupName, pickupPoint, dropoffName, dropoffPoint } = req.body;
-
-        const newBooking = new BookRide({
-            ride,
-            user,
-            seatsBooked,
-            totalAmount,
-            travelDate,
-            pickupTime,
+        const {
             pickupName,
-            pickupPoint,
             dropoffName,
+            pickupPoint,
             dropoffPoint,
+            userProfile,
+            offerRide,
+            paymentAmount,
+            noOfSeatsBooked
+        } = req.body;
+
+        // Create a new RequestBooking instance
+        const newBookingRequest = new RequestBooking({
+            pickupName,
+            dropoffName,
+            pickupPoint,
+            dropoffPoint,
+            userProfile,
+            offerRide,
+            paymentAmount,
+            noOfSeatsBooked
         });
 
-        await newBooking.save();
-        res.status(201).json({ success: true, message: 'Ride booking created successfully', booking: newBooking });
+        // Save the booking request to the database
+        await newBookingRequest.save();
+
+        res.status(201).json({ message: 'Booking request created successfully', booking: newBookingRequest });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Failed to create ride booking', error: error.message });
+        console.error('Error creating booking request:', error);
+        res.status(500).json({ message: 'Failed to create booking request', error: error.message });
     }
+};
+
+module.exports = {
+    createBookingRequest
 };

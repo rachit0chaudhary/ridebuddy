@@ -21,6 +21,9 @@ const RideSchema = new mongoose.Schema({
     },
     addStopName: {
         type: String
+    },onlyforFemale:{
+        type:Boolean,
+    default:false
     },
     addStopPoints: {
         latitude: {

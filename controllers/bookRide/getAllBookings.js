@@ -7,7 +7,8 @@ const getAllRides = async (req, res) => {
       const { pickupDate, sourcePoint, destinationPoint, seatsBooked, femaleOnly } = req.body;
 
       // Fetch all rides from the database and populate all driver details
-      let rides = await Ride.find({}).populate('driver');
+      let rides = await Ride.find({})
+          .populate('driver'); // This will populate all fields from the Profile schema
 
       console.log('All rides with populated driver details:', rides);
 
@@ -16,7 +17,6 @@ const getAllRides = async (req, res) => {
           rides = rides.filter(ride =>
               new Date(ride.pickupDate).toISOString().split('T')[0] === new Date(pickupDate).toISOString().split('T')[0]
           );
-          console.log('Rides after pickupDate filtering:', rides);
       }
 
       // Filter by source point within 20 km radius
@@ -35,7 +35,6 @@ const getAllRides = async (req, res) => {
               console.log(`Distance to sourcePoint: ${distance} meters`);
               return distance <= 20000; // 20 km
           });
-          console.log('Rides after sourcePoint filtering:', rides);
       }
 
       // Filter by destination point within 20 km radius
@@ -54,21 +53,19 @@ const getAllRides = async (req, res) => {
               console.log(`Distance to destinationPoint: ${distance} meters`);
               return distance <= 20000; // 20 km
           });
-          console.log('Rides after destinationPoint filtering:', rides);
       }
 
-      // Filter by seatsBooked
+      // Filter by seatsBooked (if applicable)
       if (seatsBooked) {
           rides = rides.filter(ride => {
-              return (ride.noOfSeat - seatsBooked) >= 0;
+              return parseInt(ride.noOfSeat, 10) >= parseInt(seatsBooked, 10);
           });
-          console.log('Rides after seatsBooked filtering:', rides);
       }
 
       // Filter by femaleOnly
-      if (femaleOnly) {
-          rides = rides.filter(ride => ride.onlyforFemale === femaleOnly);
-          console.log('Rides after femaleOnly filtering:', rides);
+      if (femaleOnly !== undefined) {
+          const isFemaleOnly = femaleOnly === true || femaleOnly === 'true';
+          rides = rides.filter(ride => ride.onlyforFemale === isFemaleOnly);
       }
 
       console.log('Filtered rides:', rides);
@@ -78,7 +75,6 @@ const getAllRides = async (req, res) => {
       res.status(500).json({ message: 'Failed to retrieve rides', error: error.message });
   }
 };
-
 
 
 module.exports = { getAllRides };
