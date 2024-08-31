@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const WalletSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
-        ref: 'profile',
+        ref: 'Profile', // Ensure this matches your user model name
         required: true
     },
     balance: {
@@ -37,7 +37,11 @@ const WalletSchema = new Schema({
     updatedAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    transactions: [{ // Add this field to keep track of transactions
+        type: Schema.Types.ObjectId,
+        ref: 'Transaction'
+    }]
 });
 
 WalletSchema.pre('save', function (next) {

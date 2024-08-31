@@ -1,9 +1,9 @@
 const Ride = require('../../models/RideOffer'); // Import the Ride model
-const Wallet = require('../../models/Wallet'); // Import the Wallet model
+const BookRide = require('../../models/BookRide'); // Import the BookRide model
 
 exports.getRideOfferById = async (req, res) => {
     try {
-        // Find the ride offer by ID and populate driver and vehical details
+        // Find the ride offer by ID and populate driver and vehicle details
         const rideOffer = await Ride.findById(req.params.id)
             .populate('driver')
             .populate('vehical'); // Populate references to Profile and Vehicle models
@@ -12,13 +12,18 @@ exports.getRideOfferById = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Ride offer not found' });
         }
 
-        // Find the wallet details for the driver
-        
+        // Find all bookings associated with this ride offer
+        const bookings = await BookRide.find({ ride: req.params.id })
+            .populate('user', 'name gender age'); // Populate the user profiles with selected fields
 
-        // Send the ride offer details and wallet details in the response
+        // Extract user profiles from bookings
+        const bookedPassengers = bookings.map(booking => booking.user);
+
+        // Send the ride offer details and booked passengers in the response
         res.status(200).json({
             success: true,
-            rideOffer
+            rideOffer,
+            bookedPassengers
         });
     } catch (error) {
         // Handle errors and send an appropriate response

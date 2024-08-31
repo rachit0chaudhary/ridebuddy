@@ -27,7 +27,7 @@ const bookRideSchema = new mongoose.Schema({
     },
     bookingStatus: {
         type: String,
-        enum: ['confirmed', 'cancelled', 'completed'],
+        enum: ['confirmed', 'cancelled', 'completed','pending'],
         default: 'confirmed'
     },
     bookingDate: {
