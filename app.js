@@ -15,6 +15,7 @@ const Emergency = require('./routes/emergencyContacts');
 const Verification = require('./routes/verification');
 const Message = require('./routes/message');
 const Community = require('./routes/community');
+const Sos = require('./routes/sosRoutes');
 
 
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api', Emergency);
 app.use('/api', Verification);
 app.use('/api', Message);
 app.use('/api', Community);
+app.use('/api', Sos);
 // app.use('/api', Coupon); // Uncommented to include the Coupon route
 
 // Error Handling Middleware

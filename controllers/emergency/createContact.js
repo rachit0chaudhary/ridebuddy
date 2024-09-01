@@ -1,22 +1,24 @@
 const EmergencyContact = require('../../models/Emergency');
 
 exports.createContacts = async (req, res) => {
+    const { profileId, name, phoneNumber, relationship } = req.body;
+
     try {
-        const { userId, contacts } = req.body;
-        let emergencyContact = await EmergencyContact.findOne({ userId });
-        if (contacts.length > 7) {
-            return res.status(400).json({ message: 'You can add up to 7 emergency contacts only.' });
-        }
-        if (emergencyContact) {
-            emergencyContact.contacts = contacts;
-            await emergencyContact.save();
+        let contact = await EmergencyContact.findOne({ profileId });
+
+        if (!contact) {
+            contact = new EmergencyContact({
+                userId: profileId,  // Map profileId to userId here
+                contacts: [{ name, phoneNumber, relationship }]
+            });
         } else {
-            emergencyContact = new EmergencyContact({ userId, contacts });
-            await emergencyContact.save();
+            contact.contacts.push({ name, phoneNumber, relationship });
         }
 
-        res.status(200).json({ message: 'Emergency contacts saved successfully', data: emergencyContact });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+        await contact.save();
+
+        res.status(200).json({ message: 'Emergency contact added successfully', contact });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to add emergency contact', error: err.message });
     }
 };

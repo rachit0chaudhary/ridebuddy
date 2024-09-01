@@ -1,18 +1,21 @@
 const EmergencyContact = require('../../models/Emergency');
 
 exports.deleteContact = async (req, res) => {
-    try {
-        const { userId, contactIndex } = req.params;
-        const emergencyContact = await EmergencyContact.findOne({ userId });
-        if (!emergencyContact) return res.status(404).json({ message: 'No emergency contacts found for this user' });
-        if (contactIndex < 0 || contactIndex >= emergencyContact.contacts.length) {
-            return res.status(400).json({ message: 'Invalid contact index' });
-        }
-        emergencyContact.contacts.splice(contactIndex, 1);
-        await emergencyContact.save();
+    const { profileId, contactId } = req.body;
 
-        res.status(200).json({ message: 'Emergency contact deleted successfully', data: emergencyContact.contacts });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    try {
+        const contact = await EmergencyContact.findOne({ profileId });
+
+        if (!contact) {
+            return res.status(404).json({ message: 'Profile not found' });
+        }
+
+        contact.contacts = contact.contacts.filter(c => c._id.toString() !== contactId);
+
+        await contact.save();
+
+        res.status(200).json({ message: 'Emergency contact deleted successfully', contact });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to delete emergency contact', error: err.message });
     }
 };
