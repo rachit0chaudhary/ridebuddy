@@ -8,7 +8,7 @@ exports.createContacts = async (req, res) => {
 
         if (!contact) {
             contact = new EmergencyContact({
-                userId: profileId,  // Map profileId to userId here
+                profileId,  // Correct field name
                 contacts: [{ name, phoneNumber, relationship }]
             });
         } else {
