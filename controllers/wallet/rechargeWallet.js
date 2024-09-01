@@ -4,15 +4,14 @@ const User = require('../../models/Profile'); // User model
 const Wallet = require('../../models/Wallet'); // Wallet model
 const Transaction = require('../../models/TransactionSchema'); // Transaction model
 
-// Initialize Razorpay instance
 const razorpay = new Razorpay({
   key_id: "rzp_test_uDS9YXiBUt9A51", // Replace with your Razorpay key_id
   key_secret: "dqOCPIc0LyBsVjw2f604csaW", // Replace with your Razorpay key_secret
 });
 
-// Create an order
+// Create an order and generate payment link
 exports.createOrder = async (req, res) => {
-  const { amount, currency } = req.body;
+  const { amount, currency, userId } = req.body;
 
   const options = {
     amount: amount * 100, // Amount in paise for INR
@@ -22,7 +21,11 @@ exports.createOrder = async (req, res) => {
 
   try {
     const order = await razorpay.orders.create(options); // Create order with Razorpay
-    res.json(order); // Send the order details to the frontend
+    
+    // Generate payment link
+    const paymentLink = `https://checkout.razorpay.com/v1/checkout.js?key=${razorpay.key_id}&order_id=${order.id}&amount=${order.amount}&name=Your App Name&description=Payment for Order&prefill[name]=User%20Name&prefill[email]=user@example.com&prefill[contact]=9999999999`;
+
+    res.json({ order, paymentLink }); // Send the order details and payment link to the frontend
   } catch (error) {
     res.status(500).json({ error: error.message }); // Handle errors
   }
@@ -32,42 +35,36 @@ exports.createOrder = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   const { order_id, payment_id, signature, userId, amount } = req.body;
 
-  // Create HMAC using Razorpay secret to verify the payment signature
-  const hmac = crypto.createHmac('sha256', "dqOCPIc0LyBsVjw2f604csaW"); // Ensure you replace with your actual secret key
+  const hmac = crypto.createHmac('sha256', razorpay.key_secret);
   hmac.update(order_id + '|' + payment_id);
   const generated_signature = hmac.digest('hex');
 
   if (generated_signature === signature) {
     try {
-      // Find the user's wallet
       const wallet = await Wallet.findOne({ userId });
       if (!wallet) {
         return res.status(404).json({ error: 'Wallet not found' });
       }
 
-      // Update wallet balance
-      wallet.balance += amount; // Add the credited amount to the wallet balance
+      wallet.balance += amount;
       await wallet.save();
 
-      // Record the transaction
       const transaction = await Transaction.create({
         userId,
         walletId: wallet._id,
         amount,
-        transactionType: 'credit', // Indicate that this is a credit transaction
+        transactionType: 'credit',
         orderId: order_id,
         paymentId: payment_id,
         status: 'success',
       });
 
-      // Associate the transaction with the wallet
       wallet.transactions.push(transaction._id);
       await wallet.save();
 
-      // Respond with success status
       res.json({ status: 'success', order_id, payment_id });
     } catch (error) {
-      res.status(500).json({ error: error.message }); // Handle errors during wallet or transaction update
+      res.status(500).json({ error: error.message });
     }
   } else {
     res.status(400).json({ status: 'failure', message: 'Payment verification failed' });
