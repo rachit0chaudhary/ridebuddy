@@ -4,6 +4,7 @@ const RideSchema = new mongoose.Schema({
     driver: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Profile',
+        required: true
     },
     sourceName: {
         type: String,
@@ -21,11 +22,8 @@ const RideSchema = new mongoose.Schema({
     },
     addStopName: {
         type: String
-    },onlyforFemale:{
-        type:Boolean,
-    default:false
     },
-    addStopPoints: {
+    addStopPoint: {
         latitude: {
             type: String
         },
@@ -47,13 +45,46 @@ const RideSchema = new mongoose.Schema({
             required: true
         }
     },
-    vehical: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Vehicle',
-        required: true
+    vehicle: {
+        brand_model: {
+            type: String,
+            required: true
+        },
+        brand_name: {
+            type: String,
+            required: true
+        },
+        fuel_type: {
+            type: String,
+            required: true
+        },
+        license_plate: {
+            type: String,
+            required: true
+        },
+        owner_name: {
+            type: String,
+            required: true
+        },
+        rc_status: {
+            type: String,
+            required: true
+        },
+        seating_capacity: {
+            type: String,
+            required: true
+        },
+        vehicle_color: {
+            type: String,
+            required: true
+        },
+        vehicle_image: {
+            type: String,
+            required: true
+        }
     },
     routes: {
-        type: String,
+        type: Array,
         required: true
     },
     tripDistance: {
@@ -64,29 +95,47 @@ const RideSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    pickupTime: {
+    time: {
         type: String,
         required: true
     },
-    pickupDate: {
-        type: String,
+    date: {
+        type: Date,
+        required: true
+    },
+    seatsOffered: {
+        type: Number,
         required: true
     },
     noOfSeat: {
         type: String,
-        required: true
     },
     pricePerSeat: {
-        type: String,
+        type: Number,
         required: true
     },
     status: {
         type: String,
         enum: ['pending', 'accepted', 'started', 'arrived', 'cancelled', 'completed'],
         default: 'pending'
+    },
+    recurringRide: {
+        type: Boolean,
+        default: false
+    },
+    selectedDays: {
+        type: [String],
+    },
+    preferences: {
+        type: [[String]],
+        default: []
+    },
+    gender:{
+        type: Boolean,
+        required: true,
     }
 });
 
-const Ride = mongoose.model('OfferRide', RideSchema);
+const RideOffer = mongoose.model('RideOffer', RideSchema);
 
-module.exports = Ride;
+module.exports = RideOffer;
