@@ -1,12 +1,11 @@
-const Ride = require('../../models/RideOffer'); // Import the Ride model
+const RideOffer = require('../../models/RideOffer'); // Import the Ride model
 const BookRide = require('../../models/BookRide'); // Import the BookRide model
 
 exports.getRideOfferById = async (req, res) => {
     try {
-        // Find the ride offer by ID and populate driver and vehicle details
-        const rideOffer = await Ride.findById(req.params.id)
-            .populate('driver')
-            .populate('vehical'); // Populate references to Profile and Vehicle models
+        // Find the ride offer by ID and populate driver details
+        const rideOffer = await RideOffer.findById(req.params.id)
+            .populate('driver'); // Populate the driver reference
 
         if (!rideOffer) {
             return res.status(404).json({ success: false, message: 'Ride offer not found' });
@@ -30,4 +29,3 @@ exports.getRideOfferById = async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to fetch ride offer', error: error.message });
     }
 };
-
