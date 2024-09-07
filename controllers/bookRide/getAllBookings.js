@@ -10,27 +10,23 @@ const getAllRides = async (req, res) => {
         let rides = await RideOffer.find({})
             .populate('driver'); // This will populate all fields from the Profile schema
 
-        // console.log('All rides with populated driver details:', rides);
-
-        // Filter by pickup date
-        if (pickupDate) {
-            const pickupDateFormatted = new Date(pickupDate).toISOString().split('T')[0];
-            rides = rides.filter(ride => {
-                // Ensure ride.date is valid
-                const rideDate = new Date(ride.date);
-                const rideDateFormatted = isNaN(rideDate.getTime()) ? null : rideDate.toISOString().split('T')[0];
-                return rideDateFormatted === pickupDateFormatted;
-            });
-        }
-        console.log('after date', rides);
-
         // Helper function to calculate distance
         const isWithinRadius = (point1, point2, radius = 20000) => {
             const distance = geolib.getDistance(point1, point2);
             return distance <= radius;
         };
 
-        // Filter by source and stop points
+        // Filter by pickup date
+        if (pickupDate) {
+            const pickupDateFormatted = new Date(pickupDate).toISOString().split('T')[0];
+            rides = rides.filter(ride => {
+                const rideDate = new Date(ride.date);
+                const rideDateFormatted = isNaN(rideDate.getTime()) ? null : rideDate.toISOString().split('T')[0];
+                return rideDateFormatted === pickupDateFormatted;
+            });
+        }
+
+        // Filter by source and stop points and add 'start' field
         if (sourcePoint) {
             rides = rides.filter(ride => {
                 const rideSourcePoint = {
@@ -42,23 +38,34 @@ const getAllRides = async (req, res) => {
                     longitude: parseFloat(sourcePoint.longitude)
                 };
 
-                const isSourceMatching = isWithinRadius(rideSourcePoint, inputSourcePoint);
-
-                // Additional stop point check
                 const rideStopPoint = ride.addStopPoint ? {
                     latitude: parseFloat(ride.addStopPoint.latitude),
                     longitude: parseFloat(ride.addStopPoint.longitude)
                 } : null;
-                const inputStopPoint = sourcePoint; // Considering inputStopPoint as a stop point if provided
 
-                const isStopMatching = rideStopPoint ? isWithinRadius(rideStopPoint, inputStopPoint) : false;
+                let start = null;
+                if (isWithinRadius(rideSourcePoint, inputSourcePoint)) {
+                    start = {
+                        name: ride.sourceName,
+                        coordinates: rideSourcePoint
+                    };
+                } else if (rideStopPoint && isWithinRadius(rideStopPoint, inputSourcePoint)) {
+                    start = {
+                        name: ride.addStopName,
+                        coordinates: rideStopPoint
+                    };
+                }
 
-                return isSourceMatching || isStopMatching;
+                // Add the 'start' field if a match is found
+                if (start) {
+                    ride.start = start;
+                    return true;
+                }
+                return false;
             });
         }
-        console.log('source point', rides);
 
-        // Filter by destination point
+        // Filter by destination and stop points and add 'end' field
         if (destinationPoint) {
             rides = rides.filter(ride => {
                 const rideDestinationPoint = {
@@ -70,29 +77,37 @@ const getAllRides = async (req, res) => {
                     longitude: parseFloat(destinationPoint.longitude)
                 };
 
-                const isDestinationMatching = isWithinRadius(rideDestinationPoint, inputDestinationPoint);
-
-                // Additional dropoff point check
-                const rideDropPoint = ride.addStopPoint ? {
+                const rideStopPoint = ride.addStopPoint ? {
                     latitude: parseFloat(ride.addStopPoint.latitude),
                     longitude: parseFloat(ride.addStopPoint.longitude)
                 } : null;
-                const inputDropPoint = destinationPoint; // Considering inputDropPoint as a drop point if provided
 
-                const isDropMatching = rideDropPoint ? isWithinRadius(rideDropPoint, inputDropPoint) : false;
+                let end = null;
+                if (isWithinRadius(rideDestinationPoint, inputDestinationPoint)) {
+                    end = {
+                        name: ride.destinationName,
+                        coordinates: rideDestinationPoint
+                    };
+                } else if (rideStopPoint && isWithinRadius(rideStopPoint, inputDestinationPoint)) {
+                    end = {
+                        name: ride.addStopName,
+                        coordinates: rideStopPoint
+                    };
+                }
 
-                return isDestinationMatching || isDropMatching;
+                // Add the 'end' field if a match is found
+                if (end) {
+                    ride.end = end;
+                    return true;
+                }
+                return false;
             });
         }
-        console.log('destination', rides);
 
         // Filter by seatsBooked (if applicable)
         if (seatsBooked) {
-            rides = rides.filter(ride => {
-                return parseInt(ride.seatsOffered, 10) >= parseInt(seatsBooked, 10);
-            });
+            rides = rides.filter(ride => parseInt(ride.seatsOffered, 10) >= parseInt(seatsBooked, 10));
         }
-        console.log('seats', rides);
 
         // Filter by femaleOnly preference
         if (femaleOnly !== undefined) {
@@ -100,13 +115,23 @@ const getAllRides = async (req, res) => {
             rides = rides.filter(ride => ride.gender === isFemaleOnly);
         }
 
-        console.log('Filtered rides:', rides);
-        res.status(200).json(rides);
+        // Map the response to include 'start' and 'end' fields
+        const response = rides.map(ride => ({
+            ...ride._doc, // Use _doc to get the raw MongoDB document
+            start: ride.start || null,
+            end: ride.end || null
+        }));
+
+        console.log('Filtered rides:', response);
+        res.status(200).json(response);
     } catch (error) {
         console.error('Error retrieving rides:', error);
         res.status(500).json({ message: 'Failed to retrieve rides', error: error.message });
     }
 };
+
+module.exports = { getAllRides };
+
 
 
 module.exports = { getAllRides };
