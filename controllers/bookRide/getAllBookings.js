@@ -22,8 +22,15 @@ const getAllRides = async (req, res) => {
                 return rideDateFormatted === pickupDateFormatted;
             });
         }
-console.log('after date', rides);
-        // Filter by source point within 20 km radius
+        console.log('after date', rides);
+
+        // Helper function to calculate distance
+        const isWithinRadius = (point1, point2, radius = 20000) => {
+            const distance = geolib.getDistance(point1, point2);
+            return distance <= radius;
+        };
+
+        // Filter by source and stop points
         if (sourcePoint) {
             rides = rides.filter(ride => {
                 const rideSourcePoint = {
@@ -35,18 +42,23 @@ console.log('after date', rides);
                     longitude: parseFloat(sourcePoint.longitude)
                 };
 
-                console.log(`Ride Source Point: ${rideSourcePoint.latitude}, ${rideSourcePoint.longitude}`);
-                console.log(`Input Source Point: ${inputSourcePoint.latitude}, ${inputSourcePoint.longitude}`);
+                const isSourceMatching = isWithinRadius(rideSourcePoint, inputSourcePoint);
 
-                const distance = geolib.getDistance(rideSourcePoint, inputSourcePoint);
-                console.log(`Distance to sourcePoint: ${distance} meters`);
+                // Additional stop point check
+                const rideStopPoint = ride.addStopPoint ? {
+                    latitude: parseFloat(ride.addStopPoint.latitude),
+                    longitude: parseFloat(ride.addStopPoint.longitude)
+                } : null;
+                const inputStopPoint = sourcePoint; // Considering inputStopPoint as a stop point if provided
 
-                // Ensure rides within 20 km radius are included
-                return distance <= 20000; // 20 km
+                const isStopMatching = rideStopPoint ? isWithinRadius(rideStopPoint, inputStopPoint) : false;
+
+                return isSourceMatching || isStopMatching;
             });
         }
         console.log('source point', rides);
-        // Filter by destination point within 20 km radius
+
+        // Filter by destination point
         if (destinationPoint) {
             rides = rides.filter(ride => {
                 const rideDestinationPoint = {
@@ -58,24 +70,30 @@ console.log('after date', rides);
                     longitude: parseFloat(destinationPoint.longitude)
                 };
 
-                console.log(`Ride Destination Point: ${rideDestinationPoint.latitude}, ${rideDestinationPoint.longitude}`);
-                console.log(`Input Destination Point: ${inputDestinationPoint.latitude}, ${inputDestinationPoint.longitude}`);
+                const isDestinationMatching = isWithinRadius(rideDestinationPoint, inputDestinationPoint);
 
-                const distance = geolib.getDistance(rideDestinationPoint, inputDestinationPoint);
-                console.log(`Distance to destinationPoint: ${distance} meters`);
+                // Additional dropoff point check
+                const rideDropPoint = ride.addStopPoint ? {
+                    latitude: parseFloat(ride.addStopPoint.latitude),
+                    longitude: parseFloat(ride.addStopPoint.longitude)
+                } : null;
+                const inputDropPoint = destinationPoint; // Considering inputDropPoint as a drop point if provided
 
-                // Ensure rides within 20 km radius are included
-                return distance <= 20000; // 20 km
+                const isDropMatching = rideDropPoint ? isWithinRadius(rideDropPoint, inputDropPoint) : false;
+
+                return isDestinationMatching || isDropMatching;
             });
         }
         console.log('destination', rides);
+
         // Filter by seatsBooked (if applicable)
         if (seatsBooked) {
             rides = rides.filter(ride => {
-                return parseInt(ride. seatsOffered, 10) >= parseInt(seatsBooked, 10);
+                return parseInt(ride.seatsOffered, 10) >= parseInt(seatsBooked, 10);
             });
         }
-console.log('seats', rides);
+        console.log('seats', rides);
+
         // Filter by femaleOnly preference
         if (femaleOnly !== undefined) {
             const isFemaleOnly = femaleOnly === true || femaleOnly === 'true';
@@ -89,5 +107,6 @@ console.log('seats', rides);
         res.status(500).json({ message: 'Failed to retrieve rides', error: error.message });
     }
 };
+
 
 module.exports = { getAllRides };

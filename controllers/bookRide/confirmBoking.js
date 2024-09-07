@@ -3,6 +3,7 @@ const Wallet = require('../../models/Wallet');
 const RideOffer = require('../../models/RideOffer');
 const BookRide = require('../../models/BookRide');
 const CurrentHolding = require('../../models/currentHolding');
+const mongoose = require('mongoose');
 
 function formatDuration(duration) {
     const hours = Math.floor(duration / 60);
@@ -13,6 +14,7 @@ function formatDuration(duration) {
 async function confirmBooking(bookingDetails) {
     const { userProfile, offerRide, paymentAmount, noOfSeatsBooked, pickupDetails, dropoffDetails } = bookingDetails;
 console.log(bookingDetails)
+
     // Find the user's wallet
     // const userWallet = await Wallet.findOne({ userId: userProfile });
     const currentHolding = await CurrentHolding.find();
@@ -28,7 +30,14 @@ console.log(bookingDetails)
     // await currentHolding.save();
 
     // Find the ride offer
-    const rideOffer = await RideOffer.findById("66d5ba9556e5f8e065827bcb");
+   
+const _id = mongoose.Types.ObjectId(offerRide);
+
+
+    console.log('Finding RideOffer with ID:', _id);
+    const rideOffer = await RideOffer.findById(_id);
+    console.log('Found RideOffer:', rideOffer);
+    
 
     if (!rideOffer) {
         throw new Error('Ride offer not found.');
