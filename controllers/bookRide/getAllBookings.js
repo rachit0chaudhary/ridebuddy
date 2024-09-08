@@ -1,22 +1,34 @@
 const RideOffer = require('../../models/RideOffer');
-const geolib = require('geolib');  // To calculate distance between coordinates
+const geolib = require('geolib'); // Ensure geolib is imported
 
 const getAllRides = async (req, res) => {
     console.log('getAllRides controller called', req.body);
     try {
         const { pickupDate, sourcePoint, destinationPoint, seatsBooked, femaleOnly } = req.body;
 
-        // Fetch all rides from the database and populate all driver details
-        let rides = await RideOffer.find({})
-            .populate('driver'); // This will populate all fields from the Profile schema
+        let rides = await RideOffer.find({}).populate('driver');
 
-        // Helper function to calculate distance
         const isWithinRadius = (point1, point2, radius = 20000) => {
             const distance = geolib.getDistance(point1, point2);
             return distance <= radius;
         };
 
-        // Filter by pickup date
+        const calculateDuration = (startPoint, endPoint, avgSpeed = 50) => {
+            const distanceMeters = geolib.getDistance(startPoint, endPoint);
+            const distanceKm = distanceMeters / 1000;
+            const durationHours = distanceKm / avgSpeed;
+            const durationMinutes = Math.round(durationHours * 60);
+            return durationMinutes;
+        };
+
+        const addMinutesToTime = (time, minutesToAdd) => {
+            const [hours, minutes] = time.split(':').map(t => parseInt(t, 10));
+            const totalMinutes = hours * 60 + minutes + minutesToAdd;
+            const newHours = Math.floor(totalMinutes / 60);
+            const newMinutes = totalMinutes % 60;
+            return `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')} PM`;
+        };
+
         if (pickupDate) {
             const pickupDateFormatted = new Date(pickupDate).toISOString().split('T')[0];
             rides = rides.filter(ride => {
@@ -26,7 +38,6 @@ const getAllRides = async (req, res) => {
             });
         }
 
-        // Filter by source and stop points and add 'start' field
         if (sourcePoint) {
             rides = rides.filter(ride => {
                 const rideSourcePoint = {
@@ -56,7 +67,6 @@ const getAllRides = async (req, res) => {
                     };
                 }
 
-                // Add the 'start' field if a match is found
                 if (start) {
                     ride.start = start;
                     return true;
@@ -65,7 +75,6 @@ const getAllRides = async (req, res) => {
             });
         }
 
-        // Filter by destination and stop points and add 'end' field
         if (destinationPoint) {
             rides = rides.filter(ride => {
                 const rideDestinationPoint = {
@@ -95,7 +104,6 @@ const getAllRides = async (req, res) => {
                     };
                 }
 
-                // Add the 'end' field if a match is found
                 if (end) {
                     ride.end = end;
                     return true;
@@ -104,23 +112,49 @@ const getAllRides = async (req, res) => {
             });
         }
 
-        // Filter by seatsBooked (if applicable)
         if (seatsBooked) {
             rides = rides.filter(ride => parseInt(ride.seatsOffered, 10) >= parseInt(seatsBooked, 10));
         }
 
-        // Filter by femaleOnly preference
         if (femaleOnly !== undefined) {
             const isFemaleOnly = femaleOnly === true || femaleOnly === 'true';
             rides = rides.filter(ride => ride.gender === isFemaleOnly);
         }
 
-        // Map the response to include 'start' and 'end' fields
-        const response = rides.map(ride => ({
-            ...ride._doc, // Use _doc to get the raw MongoDB document
-            start: ride.start || null,
-            end: ride.end || null
-        }));
+        const response = rides.map(ride => {
+            const rideTime = ride.time;
+            let startTime = rideTime;
+            let endTime = null;
+            let finalDuration = null;
+
+            if (ride.start && ride.end) {
+                if (ride.start.name === ride.sourceName) {
+                    startTime = rideTime;
+                } else {
+                    const durationToStop = calculateDuration(ride.sourcePoint, ride.addStopPoint);
+                    startTime = addMinutesToTime(rideTime, durationToStop);
+                }
+
+                if (ride.end.name === ride.destinationName) {
+                    const tripDuration = parseInt(ride.tripDuration.split(' ')[0]);
+                    endTime = addMinutesToTime(rideTime, tripDuration);
+                } else {
+                    const durationToStop = calculateDuration(ride.sourcePoint, ride.addStopPoint);
+                    endTime = addMinutesToTime(rideTime, durationToStop);
+                }
+
+                finalDuration = calculateDuration(ride.start.coordinates, ride.end.coordinates);
+            }
+
+            return {
+                ...ride._doc,
+                start: ride.start || null,
+                end: ride.end || null,
+                starttime: startTime,
+                endtime: endTime,
+                finalDuration: finalDuration ? `${finalDuration} minutes` : null
+            };
+        });
 
         console.log('Filtered rides:', response);
         res.status(200).json(response);
@@ -129,9 +163,5 @@ const getAllRides = async (req, res) => {
         res.status(500).json({ message: 'Failed to retrieve rides', error: error.message });
     }
 };
-
-module.exports = { getAllRides };
-
-
 
 module.exports = { getAllRides };
