@@ -21,52 +21,67 @@ exports.createOrder = async (req, res) => {
 
   try {
     const order = await razorpay.orders.create(options); // Create order with Razorpay
-    
-    // Generate payment link
-    const paymentLink = `https://checkout.razorpay.com/v1/checkout.js?key=${razorpay.key_id}&order_id=${order.id}&amount=${order.amount}&name=Your App Name&description=Payment for Order&prefill[name]=User%20Name&prefill[email]=user@example.com&prefill[contact]=9999999999`;
 
-    res.json({ order, paymentLink }); // Send the order details and payment link to the frontend
+    res.json({
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      receipt: order.receipt,
+    }); // Send the order ID and other details to the frontend
   } catch (error) {
     res.status(500).json({ error: error.message }); // Handle errors
   }
 };
 
-// Verify payment and update wallet
-exports.verifyPayment = async (req, res) => {
-  const { order_id, payment_id, signature, userId, amount } = req.body;
-
-  const hmac = crypto.createHmac('sha256', razorpay.key_secret);
-  hmac.update(order_id + '|' + payment_id);
-  const generated_signature = hmac.digest('hex');
-
-  if (generated_signature === signature) {
-    try {
-      const wallet = await Wallet.findOne({ userId });
-      if (!wallet) {
-        return res.status(404).json({ error: 'Wallet not found' });
+// Create an order and generate payment linkexports.verifyPayment = async (req, res) => {
+  exports.verifyPayment = async (req, res) => {
+    const { order_id, payment_id, signature, userId, amount } = req.body;
+  
+    // Generate HMAC for signature validation
+    const hmac = crypto.createHmac('sha256', razorpay.key_secret);
+    hmac.update(order_id + '|' + payment_id);
+    const generated_signature = hmac.digest('hex');
+  
+    if (generated_signature === signature) {
+      try {
+        // Find the user's wallet
+        let wallet = await Wallet.findOne({ userId });
+  
+        // If no wallet exists, create one
+        if (!wallet) {
+          wallet = new Wallet({
+            userId,
+            balance: 0, // Initialize with a 0 balance
+            transactions: [], // Initialize an empty transaction array
+          });
+          await wallet.save();
+        }
+  
+        // Update wallet balance
+        wallet.balance += amount;
+        await wallet.save();
+  
+        // Create a new transaction
+        const transaction = await Transaction.create({
+          userId,
+          walletId: wallet._id,
+          amount,
+          transactionType: 'credit', // 'credit' for payment received
+          orderId: order_id,
+          paymentId: payment_id,
+          status: 'success', // Status of the payment verification
+        });
+  
+        // Add transaction to the wallet's transaction list
+        wallet.transactions.push(transaction._id);
+        await wallet.save();
+  
+        // Respond with success
+        res.json({ status: 'success', order_id, payment_id });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
       }
-
-      wallet.balance += amount;
-      await wallet.save();
-
-      const transaction = await Transaction.create({
-        userId,
-        walletId: wallet._id,
-        amount,
-        transactionType: 'credit',
-        orderId: order_id,
-        paymentId: payment_id,
-        status: 'success',
-      });
-
-      wallet.transactions.push(transaction._id);
-      await wallet.save();
-
-      res.json({ status: 'success', order_id, payment_id });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    } else {
+      res.status(400).json({ status: 'failure', message: 'Payment verification failed' });
     }
-  } else {
-    res.status(400).json({ status: 'failure', message: 'Payment verification failed' });
-  }
-};
+  };
